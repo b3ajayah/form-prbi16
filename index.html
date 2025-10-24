@@ -22,7 +22,7 @@
       width: 90%;
       max-width: 500px;
       position: relative;
-      height: 420px;
+      height: 460px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -30,7 +30,7 @@
 
     .question, .end-screen {
       position: absolute;
-      width: 100%;
+      width: 120%;
       opacity: 0;
       transform: translateY(20px);
       transition: opacity 0.8s ease, transform 0.8s ease;
@@ -71,7 +71,6 @@
 
     input::placeholder, textarea::placeholder {
       color: #aaa;
-      text-shadow: 0 0 1px rgba(0,0,0,0.1);
     }
 
     .options {
@@ -153,7 +152,7 @@
       height: 5px;
       background: #eee;
       border-radius: 3px;
-      margin-top: 10px;
+      margin-top: 15px;
     }
 
     #progressBar {
@@ -163,11 +162,11 @@
       border-radius: 3px;
       transition: width 0.1s linear;
     }
-
   </style>
 </head>
 <body>
   <div class="container">
+
     <!-- Q1 -->
     <div class="question active" id="q1">
       <h2>Siapa namamu?</h2>
@@ -181,14 +180,11 @@
 
     <!-- Q2 -->
     <div class="question" id="q2">
-      <h2>
-        Sudah berapa lama anda bergereja di<br>
-        GBI Angke Jaya?
-      </h2>
+      <h2>Sudah berapa lama anda bergereja di<br>GBI Angke Jaya?</h2>
       <div class="options">
         <label><input type="radio" name="duration" value="<1 tahun"> &lt; 1 tahun</label>
-        <label><input type="radio" name="duration" value=">1 tahun"> &gt; 1 tahun</label>
-        <label><input type="radio" name="duration" value=">2 tahun"> &gt; 2 tahun</label>
+        <label><input type="radio" name="duration" value="1-2 tahun"> 1-2 tahun</label>
+        <label><input type="radio" name="duration" value="3-5 tahun"> 3-5 tahun</label>
         <label><input type="radio" name="duration" value=">5 tahun"> &gt; 5 tahun</label>
       </div>
       <div class="error" id="err2">Silakan pilih salah satu.</div>
@@ -206,8 +202,20 @@
       <div class="error" id="err3">Harapan tidak boleh kosong.</div>
       <div class="btn-group">
         <button class="btn-prev" onclick="prevQuestion(3)">Prev</button>
-        <button onclick="submitForm()">Submit</button>
+        <button onclick="nextQuestion(3)">Next</button>
       </div>
+    </div>
+
+    <!-- Q4 -->
+    <div class="question" id="q4">
+      <h2>Jika saat ini juga Tuhan ingin membentuk kamu,<br>hidupmu mau dibentuk seperti apa?</h2>
+      <textarea id="formation" rows="3" placeholder="Type your answer here..."></textarea>
+      <div class="error" id="err4">Jawaban tidak boleh kosong.</div>
+      <div class="btn-group">
+        <button class="btn-prev" onclick="prevQuestion(4)">Prev</button>
+        <button onclick="submitForm()">Kirim</button>
+      </div>
+
       <!-- Progress Bar -->
       <div id="progressContainer">
         <div id="progressBar"></div>
@@ -219,6 +227,7 @@
       <h1>Harapan anda sangat berarti!</h1>
       <p>Terima kasih, Tuhan Yesus Memberkati!</p>
     </div>
+
   </div>
 
   <script>
@@ -228,18 +237,24 @@
       if (current === 1) {
         const name = document.getElementById("name").value.trim();
         const err = document.getElementById("err1");
-        if (name === "") { err.classList.add("show-error"); } 
+        if (name === "") err.classList.add("show-error");
         else { err.classList.remove("show-error"); valid = true; }
       }
 
       if (current === 2) {
         const selected = document.querySelector("input[name='duration']:checked");
         const err = document.getElementById("err2");
-        if (!selected) { err.classList.add("show-error"); } 
+        if (!selected) err.classList.add("show-error");
         else { err.classList.remove("show-error"); valid = true; }
       }
 
-      if (!valid && current !== 1 && current !== 2) valid = true;
+      if (current === 3) {
+        const hope = document.getElementById("hope").value.trim();
+        const err = document.getElementById("err3");
+        if (hope === "") err.classList.add("show-error");
+        else { err.classList.remove("show-error"); valid = true; }
+      }
+
       if (!valid) return;
 
       const currentQ = document.getElementById(`q${current}`);
@@ -258,14 +273,19 @@
     }
 
     function submitForm() {
-      const hope = document.getElementById("hope").value.trim();
-      const err = document.getElementById("err3");
-      if (hope === "") { err.classList.add("show-error"); return; } 
-      else { err.classList.remove("show-error"); }
+      const formation = document.getElementById("formation").value.trim();
+      const err4 = document.getElementById("err4");
+      if (formation === "") {
+        err4.classList.add("show-error");
+        return;
+      } else {
+        err4.classList.remove("show-error");
+      }
 
       const name = document.getElementById("name").value.trim();
       const duration = document.querySelector("input[name='duration']:checked")?.value || "";
-      const data = { name, duration, hope };
+      const hope = document.getElementById("hope").value.trim();
+      const data = { name, duration, hope, formation };
 
       // Progress bar
       const progressContainer = document.getElementById("progressContainer");
@@ -276,13 +296,16 @@
       let width = 0;
       const interval = setInterval(() => {
         if (width >= 90) clearInterval(interval);
-        else { width += 5; progressBar.style.width = width + "%"; }
+        else {
+          width += 5;
+          progressBar.style.width = width + "%";
+        }
       }, 100);
 
-      fetch("https://script.google.com/macros/s/AKfycbzwGmLgpHAYFSKnW0LGwI8kHh9AefJy7Intjbnxe8kIBF1BdiZ5orbSlwyJwJ9tYhzJhA/exec", {
-		  method: "POST",
-		  body: JSON.stringify(data)
-		})
+      fetch("https://script.google.com/macros/s/AKfycbyyVMl1_CQBU8FO4-pri-NHT8msV634IAMv9YspsAvJeY23SiNkBe0VTZVr35fYVcfg4Q/exec", {
+        method: "POST",
+        body: JSON.stringify(data)
+      })
         .then(res => res.json())
         .then(resp => {
           clearInterval(interval);
